@@ -29,6 +29,13 @@ app.use(
   })
 );
 
+app.options('*', cors({
+  origin: process.env.ALLOWED_ORIGIN,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
