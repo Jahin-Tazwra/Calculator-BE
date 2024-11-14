@@ -63,37 +63,47 @@ async function analyzeImage(imgPath, dictOfVars) {
       7. "Quadratic Equations with Imaginary Solutions":  
         For quadratic equations without real solutions (e.g., "x^2 + x + 1 = 0"):  
         - Use the "quadratic formula" and solve for x, allowing for imaginary values when b² - 4ac < 0.  
-        - Return solutions including the imaginary part in the format "{'expr': 'x', 'result': 'solution with i', 'assign': true}". Apply ranges if specified; otherwise, solve generally.
+        - Return solutions including the imaginary part in the format "{'expr': 'x', 'result': '(-1 + √3i) / 2', 'assign': true}" and "{'expr': 'x', 'result': '(-1 - √3i) / 2', 'assign': true}". Apply ranges if specified; otherwise, solve generally.
 
-      8. "Trigonometric Expressions":  
+      8. "Quadratic Equations with both Real and Imaginary Solutions":  
+          For quadratic equations with both real and imaginary solutions (e.g., "(x-1)(x^2 + x + 1) = 0"):
+          - Use the "quadratic formula": x = (-b ± √(b² - 4ac)) / (2a) to find solutions for x.  
+          - If ranges for x are specified, apply them; if not, provide general solutions.
+          - Return solutions including the imaginary part in the format "{'expr': 'x', 'result': '1', 'assign': true}", "{'expr': 'x', 'result': '(-1 + √3i) / 2', 'assign': true}" and "{'expr': 'x', 'result': '(-1 - √3i) / 2', 'assign': true}". Apply ranges if specified; otherwise, solve generally.
+
+      9. "Trigonometric Expressions":  
         For expressions involving trigonometric functions (e.g., "sin(30)", "cos(45)", "tan(x)"):  
-        - Evaluate based on standard angles if given, or apply "trigonometric identities" (e.g., sin²(x) + cos²(x) = 1) for unknowns.  
+        - Evaluate based on standard angles if given, or apply "trigonometric identities" (e.g., sin²(x) + cos²(x) = 1) for unknowns.
+        - Return solutions including the imaginary part. if there are any imaginary solutions.
         - Use radians unless degrees are specified. If ranges (e.g., 0 ≤ x < 2π) are provided, apply them; if not, solve as a general expression.  
         - Return in format: "[{'expr': 'given expression', 'result': 'evaluated answer'}]".
 
-      9. "Logarithmic Expressions":  
+      10. "Logarithmic Expressions":  
         For logarithmic expressions (e.g., "log(10)", "ln(1)", "log_base(64, 2)"):  
         - Evaluate based on base 10 for log(), base e for ln(), or the specified base (e.g., "log_base(64, 2)" means log base 2 of 64).  
         - Use logarithmic properties like "log(a) + log(b) = log(ab)" or "log(a) - log(b) = log(a/b)" for complex expressions.  
+        - Return solutions including the imaginary part if there are any imaginary solutions.
         - If a range for the argument is given, apply it; otherwise, evaluate the general value.  
         - Return in format: "[{'expr': 'given expression', 'result': 'evaluated answer'}]".
 
-      10. "Derivatives":  
+      11. "Derivatives":  
         For derivatives (e.g., d/dx(f(x)) = 2x for f(x) = x^2):  
         - Apply differentiation rules based on the type of function:
           - "Power Rule": d/dx(x^n) = n*x^(n-1).
           - "Product Rule": d/dx(u*v) = u'v + uv'.
           - "Quotient Rule": d/dx(u/v) = (u'v - uv')/v^2.
           - "Chain Rule": d/dx(f(g(x))) = f'(g(x)) * g'(x).
+        - Return solutions including the imaginary part if there are any imaginary solutions.
         - If a specific point or interval is specified, calculate the derivative at that point or over the interval; otherwise, return the general derivative.
         - Format: "[{'expr': 'given function and derivative', 'result': 'derivative expression or value'}]".
 
-      11. "Integrals":  
+      12. "Integrals":  
         For integrals (e.g., ∫ f(x) dx, definite or indefinite):  
         - Use "integration rules" based on the form of the function:
           - "Power Rule": ∫ x^n dx = (x^(n+1))/(n+1) + C for n ≠ -1.
           - "Trigonometric Integrals": e.g., ∫ sin(x) dx = -cos(x) + C.
           - "Exponential Integrals": e.g., ∫ e^x dx = e^x + C.
+        - Return solutions including the imaginary part if there are any imaginary solutions.
         - For definite integrals (e.g., ∫ from a to b), evaluate the integral at the upper and lower limits and subtract.
         - If a range is specified, integrate over that range; if indefinite, include the constant of integration C.
         - Format: "[{'expr': 'integral expression', 'result': 'integral solution'}]".
@@ -114,13 +124,15 @@ async function analyzeImage(imgPath, dictOfVars) {
 
     const data = result.response
       .text()
+      .replace(/'/g, '"') // Replace single quotes with double quotes
       .replace(/```json/g, "") // Remove any JSON code block markers
       .replace(/```/g, "") // Remove any remaining backticks
       .trim();
 
     console.log(data);
+
     // Parse JSON response
-    let answers = [];
+    let answers = [];  
     try {
       answers = JSON.parse(data);
     } catch (error) {
