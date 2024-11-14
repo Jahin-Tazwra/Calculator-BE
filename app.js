@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGIN || "localhost",
+    origin: process.env.ALLOWED_ORIGIN || "http://localhost:5317",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
